@@ -52,6 +52,7 @@ import java.util.Date;
 public class WhatsActivity extends AppCompatActivity {
 
     private TextView resultTextView;
+    private TextView resultAllTextView;
     private ImageView inputImageView;
     private Bitmap bitmap;
     private Bitmap processedBitmap;
@@ -93,47 +94,49 @@ public class WhatsActivity extends AppCompatActivity {
         autoIdentifyButton = (Button)findViewById(R.id.auto_identify_button);
         inputImageView = (ImageView)findViewById(R.id.tap_to_add_image);
         resultTextView = (TextView)findViewById(R.id.result_text);
+        resultAllTextView = (TextView)findViewById(R.id.result_text_all);
         sharedPreferences = getSharedPreferences("Picture Pref", Context.MODE_PRIVATE);
 
         myTTS = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
             @Override
             public void onInit(int status) {
                if(status != TextToSpeech.ERROR) {
+            	   
                }
             }
          });
         
         
-        identifyButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (v != identifyButton) {
-                    return;
-                }
-                if (processedBitmap == null) {
-                    return;
-                }
-
-                new AsyncTask<Bitmap, Void, String>(){
-                    @Override
-                    protected void onPreExecute() {
-                        resultTextView.setText("Calculating...");
-                    }
-
-                    @Override
-                    protected String doInBackground(Bitmap... bitmaps) {
-                        synchronized (identifyButton) {
-                            String tag = MxNetUtils.identifyImage(bitmaps[0]);
-                            return tag;
-                        }
-                    }
-                    @Override
-                    protected void onPostExecute(String tag) {
-                        resultTextView.setText(tag);
-                    }
-                }.execute(processedBitmap);
-            }
-        });
+//        identifyButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                if (v != identifyButton) {
+//                    return;
+//                }
+//                if (processedBitmap == null) {
+//                    return;
+//                }
+//
+//                new AsyncTask<Bitmap, Void, String>(){
+//                    @Override
+//                    protected void onPreExecute() {
+//                        resultTextView.setText("Calculating...");
+//                    }
+//
+//                    @Override
+//                    protected String doInBackground(Bitmap... bitmaps) {
+//                        synchronized (identifyButton) {
+//                            String tag = MxNetUtils.identifyImage(bitmaps[0]);
+//                            return tag;
+//                        }
+//                    }
+//                    @Override
+//                    protected void onPostExecute(String tag) {
+//                        resultTextView.setText(tag);
+//                    }
+//                }.execute(processedBitmap);
+//            }
+//        });
         
         
         
@@ -220,40 +223,36 @@ public class WhatsActivity extends AppCompatActivity {
 		                 inputImageView.setImageBitmap(processedBitmap);
 						 
 		                 if (!lock.working){
-			                 new AsyncTask<Bitmap, Void, String>(){
+			                 new AsyncTask<Bitmap, Void, String[]>(){
 			                     @Override
 			                     protected void onPreExecute() {
-			                         //resultTextView.setText("Calculating...");
 			                    	 lock.working = true;
 			                     }
 	
 			                     @Override
-			                     protected String doInBackground(Bitmap... bitmaps) {
+			                     protected String[] doInBackground(Bitmap... bitmaps) {
 			                         synchronized (identifyButton) {
-			                             String tag = MxNetUtils.identifyImage(bitmaps[0]);
+			                             String[] tag = MxNetUtils.identifyImage(bitmaps[0]);
 			                             return tag;
 			                         }
 			                     }
 			                     @Override
-			                     protected void onPostExecute(String tag) {
-			                         resultTextView.setText(tag);
+			                     protected void onPostExecute(String[] tag) {
 
-			                         if (tag.length() > 0){
-			                 			//speak straight away
-			                 	    	myTTS.speak(tag, TextToSpeech.QUEUE_FLUSH, null);
+			                         if (tag[0].length() > 0 &&
+			                             !resultTextView.getText().equals(tag[0])){
+			                 	    	myTTS.speak(tag[0], TextToSpeech.QUEUE_FLUSH, null);
 			                         }
 			                         
+			                         resultTextView.setText(tag[0]);
+			                         resultAllTextView.setText(tag[1]);
 			                         
 			                         lock.working = false;
-			                        
 			                     }
 			                 }.execute(processedBitmap);
 		                 }
 		                 
 					 }
-
-					
-					
 				}
 			});
         }
@@ -483,14 +482,14 @@ public class WhatsActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_use_camera) {
-            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, true).apply();
-            return true;
-        } else if (id == R.id.action_use_gallery) {
-            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, false).apply();
-            return true;
-        }
+//        //noinspection SimplifiableIfStatement
+//        if (id == R.id.action_use_camera) {
+//            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, true).apply();
+//            return true;
+//        } else if (id == R.id.action_use_gallery) {
+//            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, false).apply();
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }

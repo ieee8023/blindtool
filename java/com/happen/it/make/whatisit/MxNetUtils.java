@@ -21,7 +21,7 @@ public class MxNetUtils {
     static String name = "";
     static int count = 0;
     
-    public static String identifyImage(final Bitmap bitmap) {
+    public static String[] identifyImage(final Bitmap bitmap) {
         ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getByteCount());
         bitmap.copyPixelsToBuffer(byteBuffer);
         byte[] bytes = byteBuffer.array();
@@ -55,39 +55,48 @@ public class MxNetUtils {
         
         Arrays.sort(results);
         
-        String ret = "";
-        for (int i = 0; i < 50; ++i) {
+        String[] ret = {"",""};
+        for (int i = 0; i < 10; ++i) {
         	
         	Cat cat = results[i];
         	
         	Log.i("WHATISIT", WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score));
-        	ret += WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score) + "\n";
+        	ret[1] += WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score) + "\n";
         }
         
         String newname = WhatsApplication.getName(results[0].index).split(" ", 2)[1];
         
-        if (newname.equals(name) && results[0].score > 0.20){
-        	count++;
-        	
-        	if (count < 5){
-        	 Vibrator v = (Vibrator) WhatsActivity.activity.getSystemService(Context.VIBRATOR_SERVICE);
-        	 v.vibrate(50);// Vibrate for 500 milliseconds
-        	}
-        	
-        }else{
-        	name = newname;
-        	count = 0;
-        }
+        Vibrator v = (Vibrator) WhatsActivity.activity.getSystemService(Context.VIBRATOR_SERVICE);
+        v.vibrate((long) (500*Math.pow(results[0].score,2)));
         
-        String pred = "";
-        if (count > 3)
-        	pred = newname;
         
-        pred += "\n\n";
+        if (results[0].score > 0.40)
+        	ret[0] = newname;
+        
+        
+        
+//        if (newname.equals(name) && results[0].score > 0.40){
+//        	count++;
+//        	
+//        	
+//        	if (count < 2){
+//        		 //v.vibrate(50);
+//        	}
+//        	
+//        }else{
+//        	name = newname;
+//        	count = 0;
+//        }
+        
+//        String pred = "";
+//        if (count > 0)
+//        	pred = newname;
+        
+        //pred += "\n\n";
         
         //Cat cat = results[0];
         
-        return pred;// + ret;
+        return ret;
     }
     
 	public static String smallNum(double in){
