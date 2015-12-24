@@ -22,6 +22,9 @@ public class MxNetUtils {
     static int count = 0;
     
     public static String[] identifyImage(final Bitmap bitmap) {
+    	
+    	long starttime = System.currentTimeMillis();
+    	
         ByteBuffer byteBuffer = ByteBuffer.allocate(bitmap.getByteCount());
         bitmap.copyPixelsToBuffer(byteBuffer);
         byte[] bytes = byteBuffer.array();
@@ -60,41 +63,24 @@ public class MxNetUtils {
         	
         	Cat cat = results[i];
         	
-        	Log.i("WHATISIT", WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score));
+        	//Log.i("WHATISIT", WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score));
         	ret[1] += WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score) + "\n";
         }
         
         String newname = WhatsApplication.getName(results[0].index).split(" ", 2)[1];
         
+        newname = newname.split(",", 2)[0];
+        
         Vibrator v = (Vibrator) WhatsActivity.activity.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate((long) (500*Math.pow(results[0].score,2)));
         
         
-        if (results[0].score > 0.40)
+        if (results[0].score > 0.25)
         	ret[0] = newname;
         
+        long endtime = System.currentTimeMillis();
         
-        
-//        if (newname.equals(name) && results[0].score > 0.40){
-//        	count++;
-//        	
-//        	
-//        	if (count < 2){
-//        		 //v.vibrate(50);
-//        	}
-//        	
-//        }else{
-//        	name = newname;
-//        	count = 0;
-//        }
-        
-//        String pred = "";
-//        if (count > 0)
-//        	pred = newname;
-        
-        //pred += "\n\n";
-        
-        //Cat cat = results[0];
+        Log.i("AAAAA", "identifyImage took " + (endtime-starttime)/1000 + "s");
         
         return ret;
     }

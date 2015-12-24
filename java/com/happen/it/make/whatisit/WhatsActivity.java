@@ -55,7 +55,6 @@ public class WhatsActivity extends AppCompatActivity {
     private TextView resultAllTextView;
     private ImageView inputImageView;
     private Bitmap bitmap;
-    private Bitmap processedBitmap;
     private Button identifyButton;
     private Button autoIdentifyButton;
     private SharedPreferences sharedPreferences;
@@ -195,38 +194,40 @@ public class WhatsActivity extends AppCompatActivity {
 					
 					 synchronized (camera) {
 					
-						 //Log.i("TEST", "PreviewCallback " + Arrays.toString(data));
-						 Size previewSize =  mCamera.getParameters().getPreviewSize();
-						 
-						 System.out.println("AAAAA previewSize " + previewSize.height + " " + previewSize.width);
-						  if (mCamera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
-							  
-							  YuvImage yuvimage=new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);
-							  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-							  yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
-							  byte[] jdata = baos.toByteArray();
-							  bitmap  = BitmapFactory.decodeByteArray(jdata, 0, jdata.length); 
-							  
-							  } else if (mCamera.getParameters().getPreviewFormat() == ImageFormat.JPEG || mCamera.getParameters().getPreviewFormat() == ImageFormat.RGB_565) {
-							    // RGB565 and JPEG
-								 Log.i("AAAAA", "JPEG");
-							    BitmapFactory.Options opts = new BitmapFactory.Options();
-							    opts.inDither = true;
-							    opts.inPreferredConfig = Bitmap.Config.RGB_565;
-							    bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
-							  }
-		                 
-		                 processedBitmap = processBitmap(bitmap);
-		                 
-		                 processedBitmap = RotateBitmap(processedBitmap, 90);
-		                 
-		                 inputImageView.setImageBitmap(processedBitmap);
-						 
-		                 if (!lock.working){
+						 if (!lock.working){
+							 lock.working = true;
+							 
+							 //Log.i("TEST", "PreviewCallback " + Arrays.toString(data));
+							 Size previewSize =  mCamera.getParameters().getPreviewSize();
+							 
+							 //System.out.println("AAAAA previewSize " + previewSize.height + " " + previewSize.width);
+							  if (mCamera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
+								  
+								  YuvImage yuvimage=new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);
+								  ByteArrayOutputStream baos = new ByteArrayOutputStream();
+								  yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
+								  byte[] jdata = baos.toByteArray();
+								  bitmap  = BitmapFactory.decodeByteArray(jdata, 0, jdata.length); 
+								  
+								  } else if (mCamera.getParameters().getPreviewFormat() == ImageFormat.JPEG || mCamera.getParameters().getPreviewFormat() == ImageFormat.RGB_565) {
+								    // RGB565 and JPEG
+									 //Log.i("AAAAA", "JPEG");
+								    BitmapFactory.Options opts = new BitmapFactory.Options();
+								    opts.inDither = true;
+								    opts.inPreferredConfig = Bitmap.Config.RGB_565;
+								    bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+								  }
+			                 
+							 Bitmap processedBitmap = processBitmap(bitmap);
+			                 
+			                 processedBitmap = RotateBitmap(processedBitmap, 90);
+			                 
+			                 inputImageView.setImageBitmap(processedBitmap);
+							 
 			                 new AsyncTask<Bitmap, Void, String[]>(){
 			                     @Override
 			                     protected void onPreExecute() {
-			                    	 lock.working = true;
+			                    	 
 			                     }
 	
 			                     @Override
@@ -238,7 +239,9 @@ public class WhatsActivity extends AppCompatActivity {
 			                     }
 			                     @Override
 			                     protected void onPostExecute(String[] tag) {
-
+	
+			                    	 lock.working = false;
+			                    	 
 			                         if (tag[0].length() > 0 &&
 			                             !resultTextView.getText().equals(tag[0])){
 			                 	    	myTTS.speak(tag[0], TextToSpeech.QUEUE_FLUSH, null);
@@ -247,16 +250,14 @@ public class WhatsActivity extends AppCompatActivity {
 			                         resultTextView.setText(tag[0]);
 			                         resultAllTextView.setText(tag[1]);
 			                         
-			                         lock.working = false;
 			                     }
 			                 }.execute(processedBitmap);
-		                 }
-		                 
+						 }
 					 }
 				}
 			});
-        }
-        
+	    }
+	        
         
         
         
@@ -326,27 +327,7 @@ public class WhatsActivity extends AppCompatActivity {
 //        }
         
         
-        
-      
-        
-        
-        
-        inputImageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (v != inputImageView) {
-                    return;
-                }
-                final boolean useCamera = sharedPreferences.getBoolean(PREF_USE_CAMERA_KEY, false);
-                if (useCamera) {
-                    dispatchTakePictureIntent();
-                } else {
-                    final Intent photoPickerIntent = new Intent(Intent.ACTION_PICK);
-                    photoPickerIntent.setType("image/*");
-                    startActivityForResult(photoPickerIntent, Constants.SELECT_PHOTO_CODE);
-                }
-            }
-        });
+
     }
     
     public static Bitmap RotateBitmap(Bitmap source, float angle)
@@ -463,9 +444,9 @@ public class WhatsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (processedBitmap != null) {
-            inputImageView.setImageBitmap(processedBitmap);
-        }
+//        if (processedBitmap != null) {
+//            inputImageView.setImageBitmap(processedBitmap);
+//        }
     }
 
     @Override
@@ -473,54 +454,6 @@ public class WhatsActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_whats, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-//        //noinspection SimplifiableIfStatement
-//        if (id == R.id.action_use_camera) {
-//            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, true).apply();
-//            return true;
-//        } else if (id == R.id.action_use_gallery) {
-//            sharedPreferences.edit().putBoolean(PREF_USE_CAMERA_KEY, false).apply();
-//            return true;
-//        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
-        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
-
-        switch(requestCode) {
-            case Constants.SELECT_PHOTO_CODE:
-                if(resultCode == RESULT_OK){
-                    try {
-                        final Uri imageUri = imageReturnedIntent.getData();
-                        final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-                        bitmap = BitmapFactory.decodeStream(imageStream);
-                        processedBitmap = processBitmap(bitmap);
-                        inputImageView.setImageBitmap(processedBitmap);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-                break;
-            case Constants.CAPTURE_PHOTO_CODE:
-                if (resultCode == RESULT_OK) {
-                    bitmap = BitmapFactory.decodeFile(currentPhotoPath);
-                    processedBitmap = processBitmap(bitmap);
-                    inputImageView.setImageBitmap(bitmap);
-                }
-                break;
-        }
     }
 
     static final int SHORTER_SIDE = 256;

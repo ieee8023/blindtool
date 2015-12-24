@@ -53,7 +53,7 @@
         android:background="@drawable/text_border"
         android:gravity="center"
         android:text="Starting..."
-        android:textSize="12sp" />
+        android:textSize="25sp" />
 
     <ScrollView
         android:layout_width="fill_parent"

@@ -679,7 +679,7 @@ n03804744 nail
 n03814639 neck brace
 n03814906 necklace
 n03825788 nipple
-n03832673 notebook, notebook computer
+n03832673 notebook computer
 n03837869 obelisk
 n03838899 oboe, hautboy, hautbois
 n03840681 ocarina, sweet potato
