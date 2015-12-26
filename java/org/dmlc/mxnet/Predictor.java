@@ -2,7 +2,7 @@ package org.dmlc.mxnet;
 
 public class Predictor {
   static {
-    System.loadLibrary("mxnet_predict");
+    System.loadLibrary("BlindTool");
   }
 
   public static class InputNode {
