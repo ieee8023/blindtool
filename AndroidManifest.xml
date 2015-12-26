@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.happen.it.make.whatisit" >
+    package="the.blindtool" >
 
     <uses-sdk
         android:minSdkVersion="19"
@@ -16,14 +16,14 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
-        android:name="com.happen.it.make.whatisit.WhatsApplication"
+        android:name=".BlindApplication"
         android:allowBackup="true"
         android:icon="@drawable/visually_impaired_icon"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.happen.it.make.whatisit.WhatsActivity"
+            android:name=".BlindTool"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

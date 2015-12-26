@@ -1,4 +1,4 @@
-package com.happen.it.make.whatisit;
+package the.blindtool;
 
 import android.app.Activity;
 import android.content.Context;
@@ -38,6 +38,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import the.blindtool.R;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,7 +50,7 @@ import java.util.Arrays;
 import java.util.Date;
 
 
-public class WhatsActivity extends AppCompatActivity {
+public class BlindTool extends AppCompatActivity {
 
     private TextView resultTextView;
     private TextView resultAllTextView;

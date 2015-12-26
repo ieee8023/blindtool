@@ -1,4 +1,4 @@
-package com.happen.it.make.whatisit;
+package the.blindtool;
 
 /**
  * Created by leliana on 8/5/15.

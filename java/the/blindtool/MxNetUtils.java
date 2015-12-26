@@ -1,4 +1,4 @@
-package com.happen.it.make.whatisit;
+package the.blindtool;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -30,16 +30,16 @@ public class MxNetUtils {
         byte[] bytes = byteBuffer.array();
         float[] colors = new float[bytes.length / 4 * 3];
 
-        float mean_b = WhatsApplication.getMean().get("b");
-        float mean_g = WhatsApplication.getMean().get("g");
-        float mean_r = WhatsApplication.getMean().get("r");
+        float mean_b = BlindApplication.getMean().get("b");
+        float mean_g = BlindApplication.getMean().get("g");
+        float mean_r = BlindApplication.getMean().get("r");
         for (int i = 0; i < bytes.length; i += 4) {
             int j = i / 4;
             colors[0 * 224 * 224 + j] = (float)(((int)(bytes[i + 0])) & 0xFF) - mean_r;
             colors[1 * 224 * 224 + j] = (float)(((int)(bytes[i + 1])) & 0xFF) - mean_g;
             colors[2 * 224 * 224 + j] = (float)(((int)(bytes[i + 2])) & 0xFF) - mean_b;
         }
-        Predictor predictor = WhatsApplication.getPredictor();
+        Predictor predictor = BlindApplication.getPredictor();
         predictor.forward("data", colors);
         final float[] result = predictor.getOutput(0);
 
@@ -64,14 +64,14 @@ public class MxNetUtils {
         	Cat cat = results[i];
         	
         	//Log.i("WHATISIT", WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score));
-        	ret[1] += WhatsApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score) + "\n";
+        	ret[1] += BlindApplication.getName(cat.index).split(" ", 2)[1] + " =  " + smallNum(cat.score) + "\n";
         }
         
-        String newname = WhatsApplication.getName(results[0].index).split(" ", 2)[1];
+        String newname = BlindApplication.getName(results[0].index).split(" ", 2)[1];
         
         newname = newname.split(",", 2)[0];
         
-        Vibrator v = (Vibrator) WhatsActivity.activity.getSystemService(Context.VIBRATOR_SERVICE);
+        Vibrator v = (Vibrator) BlindTool.activity.getSystemService(Context.VIBRATOR_SERVICE);
         v.vibrate((long) (500*Math.pow(results[0].score,2)));
         
         

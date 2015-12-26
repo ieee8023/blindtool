@@ -1,7 +1,8 @@
-package com.happen.it.make.whatisit;
+package the.blindtool;
 
 import android.app.Application;
 import android.content.Context;
+import the.blindtool.R;
 
 import org.dmlc.mxnet.Predictor;
 import org.json.JSONException;
@@ -20,7 +21,7 @@ import java.util.Map;
 /**
  * Created by leliana on 8/5/15.
  */
-public class WhatsApplication extends Application{
+public class BlindApplication extends Application{
     private static Predictor predictor;
     public static Predictor getPredictor() {return predictor;}
     private static List<String> dict;
