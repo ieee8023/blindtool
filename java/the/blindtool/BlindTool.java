@@ -24,6 +24,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.os.Bundle;
 import android.view.Display;
@@ -49,7 +50,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 
-
+@SuppressWarnings("deprecation")
 public class BlindTool extends AppCompatActivity {
 
     private TextView resultTextView;
@@ -64,30 +65,92 @@ public class BlindTool extends AppCompatActivity {
     public static Activity activity;
 
     private static final Lock lock = new Lock();
-    private Camera mCamera;
+    protected static Camera mCamera;
     private CameraPreview mPreview;
     
-    String TAG = "WhatsActivity";
+    String TAG = "BlindTool";
     
     private TextToSpeech myTTS;
     
     @Override
-    protected void onDestroy() {
-    	super.onDestroy();
+    protected void onStop() {
+    	super.onStop();
+    	
+    	Log.i(TAG, "onStop");
     	
     	mUnexpectedTerminationHelper.fini();
-    	if (mCamera != null){
+//    	if (mCamera != null){
+//    		mCamera.stopPreview();
+//    		mCamera.release();
+//    		mCamera = null;
+//    	}
+    }
+    
+    @Override
+    protected void onPause() {
+    	
+    	Log.d(TAG, "onPause " + mCamera);
+    	
+    	if (mCamera != null)
     		mCamera.stopPreview();
-    		mCamera.release();
-    	}
+    	
+//    	if (mCamera != null){
+//    		
+//    		mPreview.onPause();
+//    		mPreview = null;
+//    		mCamera.stopPreview();
+//    		mCamera.unlock();
+//    		//mCamera.release();
+//    		//mCamera = null;
+//    	}
+    	
+    	super.onPause();
+    }
+    
+	@Override
+    protected void onResume() {
+        
+        
+        Log.d(TAG, "onResume " + mCamera);
+        
+        if (mCamera != null)
+        	mCamera.startPreview();
+        
+//        if (mCamera == null){
+//	        // Create an instance of Camera
+//	        mCamera = getCameraInstance();
+//	        initCamera();
+//	        initPreview();
+//	        mCamera.startPreview();
+//        }else{
+//        	try {
+//				mCamera.reconnect();
+//				mCamera.startPreview();
+//				initPreview();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//        }
+//        
+        super.onResume();
+         
+    }
+    
+    @Override
+    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
+    	Log.i(TAG, "onCreateView");
+    	return super.onCreateView(parent, name, context, attrs);
     }
     
     
     @Override
-    @SuppressWarnings("deprecation")
     protected void onCreate(Bundle savedInstanceState) {
+    	
+    	Log.i(TAG, "onCreate");
+    	
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_whats);
+        setContentView(R.layout.activity_blindtool);
         activity = this;
         mUnexpectedTerminationHelper.init();
         identifyButton = (Button)findViewById(R.id.identify_button);
@@ -106,65 +169,39 @@ public class BlindTool extends AppCompatActivity {
             }
          });
         
-        
-//        identifyButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                if (v != identifyButton) {
-//                    return;
-//                }
-//                if (processedBitmap == null) {
-//                    return;
-//                }
-//
-//                new AsyncTask<Bitmap, Void, String>(){
-//                    @Override
-//                    protected void onPreExecute() {
-//                        resultTextView.setText("Calculating...");
-//                    }
-//
-//                    @Override
-//                    protected String doInBackground(Bitmap... bitmaps) {
-//                        synchronized (identifyButton) {
-//                            String tag = MxNetUtils.identifyImage(bitmaps[0]);
-//                            return tag;
-//                        }
-//                    }
-//                    @Override
-//                    protected void onPostExecute(String tag) {
-//                        resultTextView.setText(tag);
-//                    }
-//                }.execute(processedBitmap);
-//            }
-//        });
-        
-        
-        
-        
-        
-        
-        // Create an instance of Camera
         mCamera = getCameraInstance();
-
+        initCamera();
+        initPreview();
+        mCamera.startPreview();
+        
+    }
+    
+    
+    void initPreview(){
+    	
+        if (mCamera == null){
+        	Log.e(TAG, "AAAA mCamera is null");
+        }else{
+    	
+	        // Create our Preview view and set it as the content of our activity.
+	   	 	mPreview = new CameraPreview(this, mCamera);
+	        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+	        preview.addView(mPreview);
+        }
+    	
+    }
+    
+    
+    @SuppressWarnings("deprecation")
+	void initCamera(){
+    	
+    	Log.i(TAG, "initCamera");
+    	
         if (mCamera == null){
         	Log.e(TAG, "AAAA mCamera is null");
         }else{
         
-	        // Create our Preview view and set it as the content of our activity.
-	        mPreview = new CameraPreview(this, mCamera);
-	        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
-	        preview.addView(mPreview);
-	        
-        	
-//        	 SurfaceView view = new SurfaceView(this);  
-//             try {  
-//            	 mCamera.setPreviewDisplay(view.getHolder());  
-//                } catch (IOException e) {  
-//                     // TODO Auto-generated catch block  
-//                     e.printStackTrace();  
-//                }  
-//             mCamera.startPreview();
-        	
+
 	        Camera.Parameters camPara = mCamera.getParameters();
 	        
 	        int previewFormat = 0;
@@ -258,78 +295,9 @@ public class BlindTool extends AppCompatActivity {
 				}
 			});
 	    }
-	        
-        
-        
-        
-        
-        
-//        // do we have a camera?
-//        if (!getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-//          Toast.makeText(getApplicationContext(), "No camera on this device", Toast.LENGTH_LONG).show();
-//        } else {
-//          //cameraId = findFrontFacingCamera();
-//          
-//          //if (cameraId < 0) {
-//          //  Toast.makeText(getApplicationContext(), "No front facing camera found.",Toast.LENGTH_LONG).show();
-//         // } else {
-//        	final Camera camera1 = Camera.open(findFrontFacingCamera());
-//        	
-//        	
-//        	Log.i("TEST", camera1.toString());
-//        	
-//        	camera1.setOneShotPreviewCallback(new PreviewCallback() {
-//				
-//				@Override
-//				public void onPreviewFrame(byte[] data, Camera camera) {
-//					
-//					 //synchronized (camera) {
-//					
-//						 Log.i("TEST", "PreviewCallbackPreviewCallbackPreviewCallbackPreviewCallback" + camera1.toString());
-//					
-//					 //}
-////		            Image barcode = new Image(camera.getParameters().getPreviewSize().width, camera.getParameters().getPreviewSize().height, "NV21");
-////		            barcode.setData(data);
-////		            barcode = barcode.convert("Y800");
-////					
-//					
-//					
-//				}
-//			});
-//        	
-//        	try {
-//				camera1.setPreviewDisplay(((SurfaceView)findViewById(R.id.surfaceView1)).getHolder());
-//				camera1.startPreview();
-//				//camera1.takePicture(null, null, null);
-//				Log.i("TEST", "Started");
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//        	
-//        	
-//        	
-//        	
-//        	
-//        	
-            autoIdentifyButton.setOnClickListener(new View.OnClickListener() {
-                
-				@Override
-                public void onClick(View v) {
-                	
-                	Log.i("TEST", mCamera.getParameters().toString());
-                	
-                	 mCamera.stopPreview();
-                	
-
-                }
-            });  
-//        	
-//        }
-        
-        
-
     }
+    
+    
     
     public static Bitmap RotateBitmap(Bitmap source, float angle)
     {
@@ -442,13 +410,6 @@ public class BlindTool extends AppCompatActivity {
         return image;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-//        if (processedBitmap != null) {
-//            inputImageView.setImageBitmap(processedBitmap);
-//        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -484,34 +445,5 @@ public class BlindTool extends AppCompatActivity {
     
     
     private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
-    private class UnexpectedTerminationHelper {
-        private Thread mThread;
-        private Thread.UncaughtExceptionHandler mOldUncaughtExceptionHandler = null;
-        private Thread.UncaughtExceptionHandler mUncaughtExceptionHandler = new Thread.UncaughtExceptionHandler() {
-            @Override
-            public void uncaughtException(Thread thread, Throwable ex) { // gets called on the same (main) thread
-
-            	if (mCamera != null){
-            		mCamera.stopPreview();
-            		mCamera.release();
-            	}
-            	
-                if(mOldUncaughtExceptionHandler != null) {
-                    // it displays the "force close" dialog
-                    mOldUncaughtExceptionHandler.uncaughtException(thread, ex);
-                }
-            }
-        };
-        void init() {
-            mThread = Thread.currentThread();
-            mOldUncaughtExceptionHandler = mThread.getUncaughtExceptionHandler();
-            mThread.setUncaughtExceptionHandler(mUncaughtExceptionHandler);
-        }
-        void fini() {
-            mThread.setUncaughtExceptionHandler(mOldUncaughtExceptionHandler);
-            mOldUncaughtExceptionHandler = null;
-            mThread = null;
-        }
-    }
     
 }

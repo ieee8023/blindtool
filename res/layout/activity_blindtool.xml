@@ -16,16 +16,18 @@
         android:adjustViewBounds="true"
         android:scaleType="fitCenter"
         android:layout_margin="10dp"
+        android:background="#FF0000"
      />
     
     <ImageView
         android:id="@+id/tap_to_add_image"
         android:layout_width="100sp"
         android:layout_height="100sp"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentTop="true"
         android:layout_margin="10dp"
-        android:src="@drawable/round_add" />
+        android:background="#FF0000"
+		/>
     
 
     <Button
@@ -53,6 +55,7 @@
         android:background="@drawable/text_border"
         android:gravity="center"
         android:text="Starting..."
+        android:textIsSelectable="true"
         android:textSize="25sp" />
 
     <ScrollView
@@ -66,7 +69,8 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/text_border"
-            android:text="\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n"
+            android:textIsSelectable="true"
+            android:text="\n\n\n\n\n"
             android:textSize="10sp" />
     </ScrollView>
 

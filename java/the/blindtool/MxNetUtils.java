@@ -80,7 +80,7 @@ public class MxNetUtils {
         
         long endtime = System.currentTimeMillis();
         
-        Log.i("AAAAA", "identifyImage took " + (endtime-starttime)/1000 + "s");
+        Log.i("AAAAA", "identifyImage took " + (endtime-starttime)/1000.0 + "s");
         
         return ret;
     }

@@ -29,6 +29,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     protected Camera.Size mPreviewSize;
     protected Camera.Size mPictureSize;
 
+    static String TAG = "CameraPreview";
 
     public CameraPreview(Context context, Camera camera) {
         super(context);
@@ -47,20 +48,29 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
     }
 
     public void surfaceCreated(SurfaceHolder holder) {
+    	
+    	Log.d(TAG, "surfaceCreated");
+    	
         // The Surface has been created, now tell the camera where to draw the preview.
         try {
+        	//mCamera.reconnect();
             mCamera.setPreviewDisplay(holder);
-            mCamera.startPreview();
         } catch (IOException e) {
-            Log.d("CameraView", "Error setting camera preview: " + e.getMessage());
+            Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
     }
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // empty. Take care of releasing the Camera preview in your activity.
+    	Log.d(TAG, "surfaceDestroyed");
+//        mCamera.release();
+//        mCamera = null;
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
+    	
+    	Log.d(TAG, "surfaceChanged");
+    	
         // If your preview can change or rotate, take care of those events here.
         // Make sure to stop the preview before resizing or reformatting it.
 
@@ -86,7 +96,6 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
             configureCameraParameters(cameraParams, portrait);
 
             mCamera.setPreviewDisplay(mHolder);
-            mCamera.startPreview();
 
         } catch (Exception e){
             Log.d("CameraView", "Error starting camera preview: " + e.getMessage());
@@ -138,7 +147,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 //            Log.v(LOG_TAG, "Picture Actual Size - w: " + mPictureSize.width + ", h: " + mPictureSize.height);
 //        }
 
-//        mCamera.setParameters(cameraParams);
+        mCamera.setParameters(cameraParams);
     }
 
 
