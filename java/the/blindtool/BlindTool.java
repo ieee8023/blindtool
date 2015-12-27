@@ -201,29 +201,48 @@ public class BlindTool extends AppCompatActivity {
         	Log.e(TAG, "AAAA mCamera is null");
         }else{
         
-
-	        Camera.Parameters camPara = mCamera.getParameters();
-	        
-	        int previewFormat = 0;
-	        for (int format : camPara.getSupportedPreviewFormats()) {
-	          if (format == ImageFormat.NV21) {
-	            previewFormat = ImageFormat.NV21;
-	          } else if (previewFormat == 0 && (format == ImageFormat.JPEG || format == ImageFormat.RGB_565)) {
-	            previewFormat = format;
-	          }
-	        }
-	        
-	        for (Size format : camPara.getSupportedPreviewSizes()) {
-	        		System.out.println("AAAAA " + format.height + " " + format.width);
-	        		
-	        		if (format.height > 400)
-	        			camPara.setPreviewSize(format.width, format.height);
-		        }
+        	try{
+		        Camera.Parameters camPara = mCamera.getParameters();
+		        
+				int previewFormat = 0;
+				Log.i(TAG, "Formats: " + camPara.getSupportedPreviewFormats());
+				for (int format : camPara.getSupportedPreviewFormats()) {
+					
+					if (format == ImageFormat.RGB_565){
+						previewFormat = ImageFormat.RGB_565;
+						Log.i(TAG, "Format ImageFormat.RGB_565");
+					} else if (format == ImageFormat.JPEG) {
+						previewFormat = format;
+						Log.i(TAG, "Format ImageFormat.JPEG");
+					} else if (previewFormat == 0 && format == ImageFormat.NV21) {
+						previewFormat = ImageFormat.NV21;
+						Log.i(TAG, "Format ImageFormat.NV21");
+					}
+				}
 	
-	        mCamera.setParameters(camPara);
+				mCamera.setParameters(camPara);
+        	}catch (Exception e){
+        		Log.e(TAG, "Cannot set format");
+        	}
+			
+        	try{
+				Camera.Parameters camPara = mCamera.getParameters();
+				
+		        for (Size format : camPara.getSupportedPreviewSizes()) {
+		        		System.out.println("AAAAA " + format.height + " " + format.width);
+		        		
+		        		if (format.height > 200)
+		        			camPara.setPreviewSize(format.width, format.height);
+			        }
+		
+		        mCamera.setParameters(camPara);
+		        
+		        System.out.println("AAAAA Set to " + mCamera.getParameters().getPreviewSize().height + " " + mCamera.getParameters().getPreviewSize().width);
+		         
+        	}catch (Exception e){
+        		Log.e(TAG, "Cannot set resolution");
+        	}
 	        
-	        System.out.println("AAAAA Set to " + mCamera.getParameters().getPreviewSize().height + " " + mCamera.getParameters().getPreviewSize().width);
-	         
 	        
 	    	mCamera.setPreviewCallback(new PreviewCallback() {
 				
@@ -235,11 +254,15 @@ public class BlindTool extends AppCompatActivity {
 						 if (!lock.working){
 							 lock.working = true;
 							 
+							 long starttime = System.currentTimeMillis();
+							 
 							 //Log.i("TEST", "PreviewCallback " + Arrays.toString(data));
 							 Size previewSize =  mCamera.getParameters().getPreviewSize();
 							 
 							 //System.out.println("AAAAA previewSize " + previewSize.height + " " + previewSize.width);
 							  if (mCamera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
+								  
+								  //Log.i(TAG, "NV21");
 								  
 								  YuvImage yuvimage=new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);
 								  ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -249,7 +272,7 @@ public class BlindTool extends AppCompatActivity {
 								  
 								  } else if (mCamera.getParameters().getPreviewFormat() == ImageFormat.JPEG || mCamera.getParameters().getPreviewFormat() == ImageFormat.RGB_565) {
 								    // RGB565 and JPEG
-									 //Log.i("AAAAA", "JPEG");
+									 //Log.i(TAG, "JPEG");
 								    BitmapFactory.Options opts = new BitmapFactory.Options();
 								    opts.inDither = true;
 								    opts.inPreferredConfig = Bitmap.Config.RGB_565;
@@ -261,6 +284,11 @@ public class BlindTool extends AppCompatActivity {
 			                 processedBitmap = RotateBitmap(processedBitmap, 90);
 			                 
 			                 inputImageView.setImageBitmap(processedBitmap);
+			                 
+			                 
+			                 long endtime = System.currentTimeMillis();
+			                 
+			                 Log.i("AAAAA", "preprocessing took " + (endtime-starttime)/1000.0 + "s");
 							 
 			                 new AsyncTask<Bitmap, Void, String[]>(){
 			                     @Override
