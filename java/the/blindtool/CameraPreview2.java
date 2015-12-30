@@ -11,13 +11,10 @@ import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.os.Build;
 import android.util.Log;
-import android.view.Display;
-import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.widget.Toast;
-import the.blindtool.BlindTool.BlindToolPreviewCallback;
 
+@SuppressWarnings("deprecation")
 public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callback {
     private SurfaceHolder mHolder;
     private Camera mCamera;
@@ -37,7 +34,8 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
 
     static String TAG = "BlindTool";
 
-    public CameraPreview2(Context context) throws Exception{
+    
+	public CameraPreview2(Context context) throws Exception{
         super(context);
 
         this.mActivity=(Activity)context;
@@ -56,24 +54,6 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
 
 
     }
-    
-    public Camera getCameraInstance(Camera c){
-    	
-    	return null;
-//        try {
-//        	if (c == null){
-//        		c = Camera.open(); // attempt to get a Camera instance
-//        		//initCamera();
-//        	}else{
-//        		c.reconnect();
-//        		c.lock();
-//        	}
-//        }catch (Exception e){
-//            
-//        }
-//        return c; // returns null if camera is unavailable
-    }
-    
 
     public void surfaceCreated(SurfaceHolder holder) {
     	
@@ -92,24 +72,6 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
             Log.d(TAG, "Error setting camera preview: " + e.getMessage());
         }
     }
-
-//    public void surfaceDestroyed(SurfaceHolder holder) {
-//        // empty. Take care of releasing the Camera preview in your activity.
-//    	Log.d(TAG, "surfaceDestroyed " + mCamera);
-//    	
-//    	if (mCamera == null)
-//    		return;
-//    	
-//        try {
-//        	mCamera.setPreviewDisplay(null);
-//        } catch (Exception e){
-//            Log.d(TAG, "surfaceDestroyed: " + e.getMessage());
-//        }
-//    	
-//        mCamera.release();
-////        mCamera = null;
-//    }
-    
     
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
@@ -126,10 +88,21 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
         if (null == mCamera) {
             return;
         }
-        mCamera.setPreviewCallback(null);
-        mCamera.stopPreview();
-        mCamera.release();
-        mCamera = null;
+
+        try{
+			mCamera.stopPreview();
+			mCamera.setOneShotPreviewCallback(null);
+			mCamera.setPreviewCallback(null);
+			mCamera.setPreviewDisplay(null);
+			mCamera.setErrorCallback(null);
+			mCamera.unlock();
+			mCamera.release();
+			mCamera = null;
+		
+        }catch(Exception e){
+        	Log.e(TAG, "Cannot release camera",e);
+        }
+        
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
@@ -183,7 +156,6 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
         
     }
 
-    @SuppressWarnings("deprecation")
 	protected void configureCameraParameters(Camera.Parameters cameraParams, boolean portrait) {
     	
     	Log.d(TAG, "configureCameraParameters " + mCamera);

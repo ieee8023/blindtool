@@ -61,7 +61,8 @@ public class BlindTool extends AppCompatActivity {
     private Bitmap bitmap;
     private UnexpectedTerminationHelper mUnexpectedTerminationHelper = new UnexpectedTerminationHelper();
     public static Activity activity;
-
+    private AsyncTask<Void, Void, Void> cameraConnectionTask = null;
+    
     private CameraPreview2 mPreview;
     
     static final String TAG = "BlindTool";
@@ -74,28 +75,25 @@ public class BlindTool extends AppCompatActivity {
     	
     	Log.i(TAG, "onStop");
     	mUnexpectedTerminationHelper.fini();
-    	
-//    	if (mCamera != null){
-//    		mCamera.stopPreview();
-//			mCamera.setOneShotPreviewCallback(null);
-//			mCamera.setPreviewCallback(null);
-//			mCamera.setErrorCallback(null);
-//			mCamera.unlock();
-//			mCamera.release();
-//			mCamera = null;
-//    	}
-    	
     }
     
     @Override
     protected void onPause() {
+    	
     	super.onPause();
     	
     	Log.d(TAG, "onPause ");
     	
-        mPreview.stop();
-        mLayout.removeView(mPreview); // This is necessary.
-        mPreview = null;
+    	if (cameraConnectionTask != null)
+    		cameraConnectionTask.cancel(true);
+    	
+    	if (mPreview != null){
+    		
+    		mLayout.removeView(mPreview); // This is necessary.
+	        mPreview.stop();
+	        mPreview = null;
+	        System.gc();
+    	}
     }
     
 	@Override
@@ -104,27 +102,54 @@ public class BlindTool extends AppCompatActivity {
 		
         Log.d(TAG, "onResume ");
 
+		connectCamera(0);
+        
+    }
+    
+	
+	private void connectCamera(final int count){
+		
+		
         try{
         	
-	   	 	mPreview = new CameraPreview2(this);
-	   	 	
+	   	 	mPreview = new CameraPreview2(BlindTool.this);
 	        mLayout.addView(mPreview);
-	        
 	        mPreview.setPreviewCallback(new BlindToolPreviewCallback());
-	   	 	
+
         }catch(Throwable t){
         	
-        	Log.e(TAG, "Camera is locked or not available",t);
-        	resultTextView.setText("Camera is locked or not available");
-	   	 	Toast.makeText(this, "Camera is locked or not available", Toast.LENGTH_LONG).show();
+        	Log.e(TAG, "Retrying Camera Connection",t);
+        	resultTextView.setText("Retrying Camera Connection " + count);
+	   	 	//Toast.makeText(BlindTool.this, "Camera is locked or not available", Toast.LENGTH_SHORT).show();
+	   	 	
+        	cameraConnectionTask = new AsyncTask<Void, Void, Void>() {
+    			@Override
+    			protected void onPreExecute() {}
+
+    			@Override
+    			protected Void doInBackground(Void... voids) {
+    				
+    				try {
+    					Thread.sleep(200);
+    				} catch (InterruptedException e) {
+    					Log.e(TAG, "Retry Wait Error", e);
+    				}
+    				return null;
+    			}
+
+    			@Override
+    			protected void onPostExecute(Void v) {
+
+    			   	 	connectCamera(count + 1);
+    			}
+    		}.execute();
+        	
         }
-    }
-    
-    @Override
-    public View onCreateView(View parent, String name, Context context, AttributeSet attrs) {
-    	return super.onCreateView(parent, name, context, attrs);
-    }
-    
+		
+		
+		
+
+	}
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -154,117 +179,13 @@ public class BlindTool extends AppCompatActivity {
 		});
     }
     
-    
-//	void initCamera(){
-//    	
-//    	Log.i(TAG, "initCamera");
-//    	
-//        if (mCamera == null){
-//        	Log.e(TAG, "AAAA mCamera is null");
-//        }else{
-//        
-//        	try{
-//		        Camera.Parameters camPara = mCamera.getParameters();
-//		        
-//				int previewFormat = 0;
-//				Log.i(TAG, "Formats: " + camPara.getSupportedPreviewFormats());
-//				for (int format : camPara.getSupportedPreviewFormats()) {
-//					
-//					if (format == ImageFormat.RGB_565){
-//						previewFormat = ImageFormat.RGB_565;
-//						Log.i(TAG, "Format ImageFormat.RGB_565");
-//					} else if (format == ImageFormat.JPEG) {
-//						previewFormat = format;
-//						Log.i(TAG, "Format ImageFormat.JPEG");
-//					} else if (previewFormat == 0 && format == ImageFormat.NV21) {
-//						previewFormat = ImageFormat.NV21;
-//						Log.i(TAG, "Format ImageFormat.NV21");
-//					}
-//				}
-//	
-//				mCamera.setParameters(camPara);
-//        	}catch (Exception e){
-//        		Log.e(TAG, "Cannot set format");
-//        	}
-//			
-//        	try{
-//				Camera.Parameters camPara = mCamera.getParameters();
-//				
-//		        for (Size format : camPara.getSupportedPreviewSizes()) {
-//		        	Log.i(TAG, "AAAAA " + format.height + " " + format.width);
-//		        		
-//		        		if (format.height > 200)
-//		        			camPara.setPreviewSize(format.width, format.height);
-//			        }
-//		
-//		        mCamera.setParameters(camPara);
-//		        
-//		        Log.i(TAG, "AAAAA Set to " + mCamera.getParameters().getPreviewSize().height + " " + mCamera.getParameters().getPreviewSize().width);
-//		         
-//        	}catch (Exception e){
-//        		Log.e(TAG, "Cannot set resolution");
-//        	}
-//	        
-//	        
-//	    	mCamera.setPreviewCallback(new BlindToolPreviewCallback());
-//	    }
+
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.menu_whats, menu);
+//        return true;
 //    }
-    
-    
-    
-    public static Bitmap RotateBitmap(Bitmap source, float angle)
-    {
-          Matrix matrix = new Matrix();
-          matrix.postRotate(angle);
-          return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-    }
-    
-    static void decodeYUV420SP(int[] rgb, byte[] yuv420sp, int width, int height) {
-
-    	   final int frameSize = width * height;
-
-    	   for (int j = 0, yp = 0; j < height; j++) {
-    	     int uvp = frameSize + (j >> 1) * width, u = 0, v = 0;
-    	     for (int i = 0; i < width; i++, yp++) {
-    	       int y = (0xff & ((int) yuv420sp[yp])) - 16;
-    	       if (y < 0)
-    	         y = 0;
-    	       if ((i & 1) == 0) {
-    	         v = (0xff & yuv420sp[uvp++]) - 128;
-    	         u = (0xff & yuv420sp[uvp++]) - 128;
-    	       }
-
-    	       int y1192 = 1192 * y;
-    	       int r = (y1192 + 1634 * v);
-    	       int g = (y1192 - 833 * v - 400 * u);
-    	       int b = (y1192 + 2066 * u);
-
-    	       if (r < 0)
-    	         r = 0;
-    	       else if (r > 262143)
-    	         r = 262143;
-    	       if (g < 0)
-    	         g = 0;
-    	       else if (g > 262143)
-    	         g = 262143;
-    	       if (b < 0)
-    	         b = 0;
-    	       else if (b > 262143)
-    	         b = 262143;
-
-    	       rgb[yp] = 0xff000000 | ((r << 6) & 0xff0000) | ((g >> 2) & 0xff00) | ((b >> 10) & 0xff);
-    	     }
-    	   }
-    	 }   
-    
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_whats, menu);
-        return true;
-    }
     
     final class BlindToolPreviewCallback implements PreviewCallback {
     	
@@ -284,7 +205,7 @@ public class BlindTool extends AppCompatActivity {
 						 Size previewSize =  camera.getParameters().getPreviewSize();
 						 
 						 //System.out.println("AAAAA previewSize " + previewSize.height + " " + previewSize.width);
-						if (camera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
+						 if (camera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
 	
 							// Log.i(TAG, "NV21");
 	
@@ -303,10 +224,10 @@ public class BlindTool extends AppCompatActivity {
 							opts.inPreferredConfig = Bitmap.Config.RGB_565;
 							bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
 						}
-			             
+
 						 Bitmap processedBitmap = BlindUtil.processBitmap(bitmap);
 			             
-			             processedBitmap = RotateBitmap(processedBitmap, BlindUtil.getRotation(BlindTool.this));
+			             processedBitmap = BlindUtil.rotateBitmap(processedBitmap, BlindUtil.getRotation(BlindTool.this));
 			             
 			             inputImageView.setImageBitmap(processedBitmap);
 			             
@@ -315,10 +236,9 @@ public class BlindTool extends AppCompatActivity {
 			             Log.i(TAG, "preprocessing took " + (endtime-starttime)/1000.0 + "s");
 						 
 						new AsyncTask<Bitmap, Void, String[]>() {
+							
 							@Override
-							protected void onPreExecute() {
-	
-							}
+							protected void onPreExecute() {}
 	
 							@Override
 							protected String[] doInBackground(Bitmap... bitmaps) {
@@ -333,7 +253,9 @@ public class BlindTool extends AppCompatActivity {
 	
 								Lock.working = false;
 	
-								if (tag[0].length() > 0 && !tag[0].equals(resultTextView.getText())) {
+								Log.i(TAG, "identifyImage retuned: " + tag[0] + ", old: " + resultTextView.getText().toString() + ", matches: " + tag[0].equals(resultTextView.getText().toString()));
+								
+								if (tag[0].length() > 0 && !tag[0].equals(resultTextView.getText().toString())) {
 	
 									myTTS.speak(tag[0], TextToSpeech.QUEUE_FLUSH, null);
 								}
