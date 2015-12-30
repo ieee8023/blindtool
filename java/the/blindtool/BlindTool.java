@@ -1,5 +1,6 @@
 package the.blindtool;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,8 @@ import android.os.AsyncTask;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -109,47 +112,100 @@ public class BlindTool extends AppCompatActivity {
 	
 	private void connectCamera(final int count){
 		
+		if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+
+			resultTextView.setText("Need camera permissions");
+			
+			
+			ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA}, 1);
+			
+//		    // Should we show an explanation?
+//		    if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA)) {
+//		
+//		        // Show an expanation to the user *asynchronously* -- don't block
+//		        // this thread waiting for the user's response! After the user
+//		        // sees the explanation, try again to request the permission.
+//		
+//		    } else {
+//		
+//		        // No explanation needed, we can request the permission.
+//		
+//		        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.CAMERA}, 1);
+//		
+//		        // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+//		        // app-defined int constant. The callback method gets the
+//		        // result of the request.
+//		    }
+		    
+		}else{
 		
-        try{
-        	
-	   	 	mPreview = new CameraPreview2(BlindTool.this);
-	        mLayout.addView(mPreview);
-	        mPreview.setPreviewCallback(new BlindToolPreviewCallback());
-
-        }catch(Throwable t){
-        	
-        	Log.e(TAG, "Retrying Camera Connection",t);
-        	resultTextView.setText("Retrying Camera Connection " + count);
-	   	 	//Toast.makeText(BlindTool.this, "Camera is locked or not available", Toast.LENGTH_SHORT).show();
-	   	 	
-        	cameraConnectionTask = new AsyncTask<Void, Void, Void>() {
-    			@Override
-    			protected void onPreExecute() {}
-
-    			@Override
-    			protected Void doInBackground(Void... voids) {
-    				
-    				try {
-    					Thread.sleep(200);
-    				} catch (InterruptedException e) {
-    					Log.e(TAG, "Retry Wait Error", e);
-    				}
-    				return null;
-    			}
-
-    			@Override
-    			protected void onPostExecute(Void v) {
-
-    			   	 	connectCamera(count + 1);
-    			}
-    		}.execute();
-        	
-        }
-		
-		
+	        try{
+	        	
+		   	 	mPreview = new CameraPreview2(BlindTool.this);
+		        mLayout.addView(mPreview);
+		        mPreview.setPreviewCallback(new BlindToolPreviewCallback());
+	
+	        }catch(Throwable t){
+	        	
+	        	Log.e(TAG, "Retrying Camera Connection",t);
+	        	resultTextView.setText("Retrying Camera Connection " + count);
+		   	 	//Toast.makeText(BlindTool.this, "Camera is locked or not available", Toast.LENGTH_SHORT).show();
+		   	 	
+	        	cameraConnectionTask = new AsyncTask<Void, Void, Void>() {
+	    			@Override
+	    			protected void onPreExecute() {}
+	
+	    			@Override
+	    			protected Void doInBackground(Void... voids) {
+	    				
+	    				try {
+	    					Thread.sleep(200);
+	    				} catch (InterruptedException e) {
+	    					Log.e(TAG, "Retry Wait Error", e);
+	    				}
+	    				return null;
+	    			}
+	
+	    			@Override
+	    			protected void onPostExecute(Void v) {
+	
+	    			   	 	connectCamera(count + 1);
+	    			}
+	    		}.execute();
+	        	
+	        }
+			
+		}
 		
 
 	}
+	
+	@Override
+	public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+		
+	    switch (requestCode) {
+	        case 1: {
+	            // If request is cancelled, the result arrays are empty.
+	            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+	                // permission was granted, yay! Do the
+	                // contacts-related task you need to do.
+	            	
+	            	connectCamera(0);
+
+	            } else {
+
+	                // permission denied, boo! Disable the
+	                // functionality that depends on this permission.
+	            }
+	            return;
+	        }
+
+	        // other 'case' lines to check for other
+	        // permissions this app might request
+	    }
+	}
+	
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
