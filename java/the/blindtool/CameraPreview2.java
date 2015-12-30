@@ -37,12 +37,16 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
 
     static String TAG = "BlindTool";
 
-    public CameraPreview2(Context context) {
+    public CameraPreview2(Context context) throws Exception{
         super(context);
 
         this.mActivity=(Activity)context;
-        this.mCamera = getCameraInstance(mCamera);;
+        this.mCamera = Camera.open();
 
+        if (this.mCamera == null){
+        	throw new Exception("Camera Null");
+        }
+        
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
         mHolder = getHolder();
@@ -54,19 +58,20 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
     }
     
     public Camera getCameraInstance(Camera c){
-        try {
-        	if (c == null){
-        		c = Camera.open(); // attempt to get a Camera instance
-        		//initCamera();
-        	}else{
-        		c.reconnect();
-        		c.lock();
-        	}
-        }
-        catch (Exception e){
-            Toast.makeText(mActivity, "Camera is locked or not available", Toast.LENGTH_LONG).show();
-        }
-        return c; // returns null if camera is unavailable
+    	
+    	return null;
+//        try {
+//        	if (c == null){
+//        		c = Camera.open(); // attempt to get a Camera instance
+//        		//initCamera();
+//        	}else{
+//        		c.reconnect();
+//        		c.lock();
+//        	}
+//        }catch (Exception e){
+//            
+//        }
+//        return c; // returns null if camera is unavailable
     }
     
 

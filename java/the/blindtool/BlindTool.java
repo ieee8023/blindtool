@@ -104,10 +104,20 @@ public class BlindTool extends AppCompatActivity {
 		
         Log.d(TAG, "onResume ");
 
-   	 	mPreview = new CameraPreview2(this);
-        mLayout.addView(mPreview);
-        
-        mPreview.setPreviewCallback(new BlindToolPreviewCallback());
+        try{
+        	
+	   	 	mPreview = new CameraPreview2(this);
+	   	 	
+	        mLayout.addView(mPreview);
+	        
+	        mPreview.setPreviewCallback(new BlindToolPreviewCallback());
+	   	 	
+        }catch(Throwable t){
+        	
+        	Log.e(TAG, "Camera is locked or not available",t);
+        	resultTextView.setText("Camera is locked or not available");
+	   	 	Toast.makeText(this, "Camera is locked or not available", Toast.LENGTH_LONG).show();
+        }
     }
     
     @Override
@@ -278,8 +288,7 @@ public class BlindTool extends AppCompatActivity {
 	
 							// Log.i(TAG, "NV21");
 	
-							YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height,
-									null);
+							YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height,null);
 							ByteArrayOutputStream baos = new ByteArrayOutputStream();
 							yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
 							byte[] jdata = baos.toByteArray();
