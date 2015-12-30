@@ -18,6 +18,8 @@ public class MxNetUtils {
     private static boolean libLoaded = false;
     private MxNetUtils() {}
 
+    static final String TAG = "BlindTool - MXNET";
+    
     static String name = "";
     static int count = 0;
     
@@ -80,7 +82,7 @@ public class MxNetUtils {
         
         long endtime = System.currentTimeMillis();
         
-        Log.i("AAAAA", "identifyImage took " + (endtime-starttime)/1000.0 + "s");
+        Log.i(TAG, "identifyImage took " + (endtime-starttime)/1000.0 + "s");
         
         return ret;
     }

@@ -11,11 +11,11 @@ public class UnexpectedTerminationHelper {
         @Override
         public void uncaughtException(Thread thread, Throwable ex) { // gets called on the same (main) thread
 
-        	if (BlindTool.mCamera != null){
-        		BlindTool.mCamera.stopPreview();
-        		BlindTool.mCamera.release();
-        		BlindTool.mCamera = null;
-        	}
+//        	if (BlindTool.mCamera != null){
+//        		BlindTool.mCamera.stopPreview();
+//        		BlindTool.mCamera.release();
+//        		BlindTool.mCamera = null;
+//        	}
 
 			if (mOldUncaughtExceptionHandler != null) {
 				// it displays the "force close" dialog
