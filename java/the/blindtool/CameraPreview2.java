@@ -33,6 +33,7 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
     protected Camera.Size mPictureSize;
 
     static String TAG = "BlindTool";
+    public static int displayOrientation = 0;
 
     
 	public CameraPreview2(Context context) throws Exception{
@@ -177,9 +178,9 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
 	            mCamera.setParameters(cameraParams);
 	        } else { // for 2.2 and later
 	        	
-	            int angle = BlindUtil.getRotation(mActivity);
-	            Log.v(LOG_TAG, "angle: " + angle);
-	            mCamera.setDisplayOrientation(angle);
+	        	displayOrientation = BlindUtil.getRotation(mActivity);
+	            Log.v(LOG_TAG, "angle: " + displayOrientation);
+	            mCamera.setDisplayOrientation(displayOrientation);
 	        }
     	}
         

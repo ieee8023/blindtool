@@ -246,81 +246,128 @@ public class BlindTool extends AppCompatActivity {
     final class BlindToolPreviewCallback implements PreviewCallback {
     	
 		@Override
-		public void onPreviewFrame(byte[] data, Camera camera) {
+		public void onPreviewFrame(final byte[] data, final Camera camera) {
 			
 			try{
-				//Log.d(TAG, "onPreviewFrame ");
 				 synchronized (camera) {
 				
-					 if (!Lock.working){
-						 Lock.working = true;
-						 
-						 long starttime = System.currentTimeMillis();
-						 
-						 //Log.i("TEST", "PreviewCallback " + Arrays.toString(data));
-						 Size previewSize =  camera.getParameters().getPreviewSize();
-						 
-						 //System.out.println("AAAAA previewSize " + previewSize.height + " " + previewSize.width);
-						 if (camera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
-	
-							// Log.i(TAG, "NV21");
-	
-							YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height,null);
-							ByteArrayOutputStream baos = new ByteArrayOutputStream();
-							yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
-							byte[] jdata = baos.toByteArray();
-							bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
-	
-						} else if (camera.getParameters().getPreviewFormat() == ImageFormat.JPEG
-								|| camera.getParameters().getPreviewFormat() == ImageFormat.RGB_565) {
-							// RGB565 and JPEG
-							// Log.i(TAG, "JPEG");
-							BitmapFactory.Options opts = new BitmapFactory.Options();
-							opts.inDither = true;
-							opts.inPreferredConfig = Bitmap.Config.RGB_565;
-							bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
-						}
+					if (!Lock.working) {
+						Lock.working = true;
 
-						 Bitmap processedBitmap = BlindUtil.processBitmap(bitmap);
-			             
-			             processedBitmap = BlindUtil.rotateBitmap(processedBitmap, BlindUtil.getRotation(BlindTool.this));
-			             
-			             inputImageView.setImageBitmap(processedBitmap);
-			             
-			             long endtime = System.currentTimeMillis();
-			             
-			             Log.i(TAG, "preprocessing took " + (endtime-starttime)/1000.0 + "s");
-						 
-						new AsyncTask<Bitmap, Void, String[]>() {
-							
+						final long starttime = System.currentTimeMillis();
+
+						new AsyncTask<Bitmap, Bitmap, Bitmap[]>() {
+
 							@Override
-							protected void onPreExecute() {}
-	
-							@Override
-							protected String[] doInBackground(Bitmap... bitmaps) {
-								synchronized (this) {
-									String[] tag = MxNetUtils.identifyImage(bitmaps[0]);
-									return tag;
-								}
+							protected void onPreExecute() {
 							}
-	
+
 							@Override
-							protected void onPostExecute(String[] tag) {
+							protected Bitmap[] doInBackground(Bitmap... bits) {
+
+								////////////////////////////////
+								////////////////////////////////
+								//////////////// FIRST BACKGROUND TASK
+								try{
+									Size previewSize = camera.getParameters().getPreviewSize();
 	
-								Lock.working = false;
+									if (camera.getParameters().getPreviewFormat() == ImageFormat.NV21) {
 	
-								Log.i(TAG, "identifyImage retuned: " + tag[0] + ", old: " + resultTextView.getText().toString() + ", matches: " + tag[0].equals(resultTextView.getText().toString()));
+										// Log.i(TAG, "NV21");
+										YuvImage yuvimage = new YuvImage(data, ImageFormat.NV21, previewSize.width, previewSize.height, null);
+										ByteArrayOutputStream baos = new ByteArrayOutputStream();
+										yuvimage.compressToJpeg(new Rect(0, 0, previewSize.width, previewSize.height), 80, baos);
+										byte[] jdata = baos.toByteArray();
+										bitmap = BitmapFactory.decodeByteArray(jdata, 0, jdata.length);
+	
+									} else if (camera.getParameters().getPreviewFormat() == ImageFormat.JPEG
+											|| camera.getParameters().getPreviewFormat() == ImageFormat.RGB_565) {
+										
+										// RGB565 and JPEG
+										// Log.i(TAG, "JPEG");
+										BitmapFactory.Options opts = new BitmapFactory.Options();
+										opts.inDither = true;
+										opts.inPreferredConfig = Bitmap.Config.RGB_565;
+										bitmap = BitmapFactory.decodeByteArray(data, 0, data.length, opts);
+									}
+	
+									Bitmap[] bitmaps = new Bitmap[1];
+									bitmaps[0] = BlindUtil.processBitmap(bitmap);
+									bitmaps[0] = BlindUtil.rotateBitmap(bitmaps[0], CameraPreview2.displayOrientation);
+	
+									return bitmaps;
+									
+								}catch(Throwable e){
+									Log.e(TAG, "Error in FIRST BACKGROUND TASK",e);
+								}
 								
-								if (tag[0].length() > 0 && !tag[0].equals(resultTextView.getText().toString())) {
-	
-									myTTS.speak(tag[0], TextToSpeech.QUEUE_FLUSH, null);
-								}
-	
-								resultTextView.setText(tag[0]);
-								resultAllTextView.setText(tag[1]);
-	
+								return null;
 							}
-						}.execute(processedBitmap);
+						
+							@Override
+							protected void onPostExecute(final Bitmap[] bitmaps) {
+
+								if (bitmaps == null){ 
+									resultTextView.setText("Error");
+									return;
+								}
+								
+								
+								long endtime = System.currentTimeMillis();
+
+								Log.i(TAG, "preprocessing took " + (endtime - starttime) / 1000.0 + "s");
+
+								new AsyncTask<Bitmap, Void, String[]>() {
+
+									@Override
+									protected void onPreExecute() {
+									}
+
+									@Override
+									protected String[] doInBackground(Bitmap... bits) {
+										
+										////////////////////////////////
+										////////////////////////////////
+										//////////////// SECOND BACKGROUND TASK
+										
+										synchronized (this) {
+											try{
+												String[] tag = MxNetUtils.identifyImage(bitmaps[0]);
+												return tag;
+											}catch(Throwable t){
+												Log.e(TAG, "Error in SECOND BACKGROUND TASK",t);
+											}
+										}
+										return null;
+									}
+
+									@Override
+									protected void onPostExecute(String[] tag) {
+
+										if (tag == null){ 
+											resultTextView.setText("Error");
+											return;
+										}
+										
+										
+										Lock.working = false;
+
+										Log.i(TAG, "identifyImage retuned: " + tag[0] + ", old: " + resultTextView.getText().toString() + ", matches: " + tag[0].equals(resultTextView.getText().toString()));
+
+										if (tag[0].length() > 0 && !tag[0].equals(resultTextView.getText().toString())) {
+
+											myTTS.speak(tag[0], TextToSpeech.QUEUE_FLUSH, null);
+										}
+
+										inputImageView.setImageBitmap(bitmaps[0]);
+
+										resultTextView.setText(tag[0]);
+										resultAllTextView.setText(tag[1]);
+
+									}
+								}.execute();
+							}
+						}.execute();
 					 }
 				 }
 			}catch (Throwable t){
