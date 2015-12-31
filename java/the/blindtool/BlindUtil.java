@@ -37,7 +37,7 @@ public class BlindUtil {
     		return 0;
     	}
     	
-    	int angle;
+    	int angle = 0;
         Display display = mActivity.getWindowManager().getDefaultDisplay();
         switch (display.getRotation()) {
             case Surface.ROTATION_0: // This is display orientation
@@ -51,9 +51,6 @@ public class BlindUtil {
                 break;
             case Surface.ROTATION_270:
                 angle = 180;
-                break;
-            default:
-                angle = 90;
                 break;
         }
     	

@@ -163,19 +163,25 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
     	if (mCamera == null)
     		return;
     	
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) { // for 2.1 and before
-            if (portrait) {
-                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_PORTRAIT);
-            } else {
-                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_LANDSCAPE);
-            }
-            mCamera.setParameters(cameraParams);
-        } else { // for 2.2 and later
-        	
-            int angle = BlindUtil.getRotation(mActivity);
-            Log.v(LOG_TAG, "angle: " + angle);
-            mCamera.setDisplayOrientation(angle);
-        }
+    	{
+    		
+    	
+	        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) { // for 2.1 and before
+	        	
+	        	Camera.Parameters camPara = mCamera.getParameters();
+	            if (portrait) {
+	                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_PORTRAIT);
+	            } else {
+	                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_LANDSCAPE);
+	            }
+	            mCamera.setParameters(cameraParams);
+	        } else { // for 2.2 and later
+	        	
+	            int angle = BlindUtil.getRotation(mActivity);
+	            Log.v(LOG_TAG, "angle: " + angle);
+	            mCamera.setDisplayOrientation(angle);
+	        }
+    	}
         
         {
         Camera.Parameters camPara = mCamera.getParameters();
