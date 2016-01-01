@@ -121,22 +121,20 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
           return;
         }
 
-        // stop preview before making changes
-        try {
-        	mCamera.setPreviewCallback(null);
-        	mCamera.stopPreview();
-        	
-        } catch (Exception e){
-          // ignore: tried to stop a non-existent preview
-        }
+//        // stop preview before making changes
+//        try {
+////        	mCamera.setPreviewCallback(null);
+////        	mCamera.stopPreview();
+//        	
+//        } catch (Exception e){
+//          // ignore: tried to stop a non-existent preview
+//        }
 
         // set preview size and make any resize, rotate or
         // reformatting changes here
 
         try {
-            Camera.Parameters cameraParams = mCamera.getParameters();
-            boolean portrait = isPortrait();
-            configureCameraParameters(cameraParams, portrait);
+            configureCameraParameters();
 
         } catch (Exception e){
             Log.d("CameraView", "Error setting camera params: " + e.getMessage());
@@ -157,25 +155,34 @@ public class CameraPreview2 extends SurfaceView implements SurfaceHolder.Callbac
         
     }
 
-	protected void configureCameraParameters(Camera.Parameters cameraParams, boolean portrait) {
+	protected void configureCameraParameters() {
     	
     	Log.d(TAG, "configureCameraParameters " + mCamera);
     	
     	if (mCamera == null)
     		return;
     	
+    	//cameraParams.setFlashMode(Camera.Parameters.FLASH_MODE_ON);
+    	
+    	{
+    		Camera.Parameters camPara = mCamera.getParameters();
+    	
+    		camPara.setWhiteBalance(Camera.Parameters.WHITE_BALANCE_AUTO);
+	    		
+	    	mCamera.setParameters(camPara);
+    	}
     	{
     		
     	
 	        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.FROYO) { // for 2.1 and before
 	        	
 	        	Camera.Parameters camPara = mCamera.getParameters();
-	            if (portrait) {
-	                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_PORTRAIT);
+	            if (isPortrait()) {
+	            	camPara.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_PORTRAIT);
 	            } else {
-	                cameraParams.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_LANDSCAPE);
+	            	camPara.set(CAMERA_PARAM_ORIENTATION, CAMERA_PARAM_LANDSCAPE);
 	            }
-	            mCamera.setParameters(cameraParams);
+	            mCamera.setParameters(camPara);
 	        } else { // for 2.2 and later
 	        	
 	        	displayOrientation = BlindUtil.getRotation(mActivity);
