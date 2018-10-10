@@ -1,6 +1,6 @@
 # BlindTool – Helping the Blind See using Deep Learning
 
-By Joseph Paul Cohen (2015), Released under a [GPLv3](https://www.gnu.org/licenses/gpl.html) License
+By Joseph Paul Cohen (2015), Released under a BSD License
 
 More info: http://josephpcohen.com/w/blindtool-helping-the-blind-see/
 
