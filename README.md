@@ -1,4 +1,4 @@
-# BlindTool – Helping the Blind See using Deep Learning
+# BlindTool – A mobile app that gives a "sense of vision" to the blind with deep learning
 
 By Joseph Paul Cohen (2015), Released under a BSD License
 
