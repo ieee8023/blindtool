@@ -18,8 +18,12 @@ The convolutional neural network inside the app can understand 1000 classes base
 ```
 @misc{Cohen2015,
 author = {Cohen, Joseph Paul},
-title = {BlindTool – A mobile app that gives a "sense of vision" to the blind with deep learning},
+title = {BlindTool – A mobile app that gives a 'sense of vision' to the blind with deep learning},
 url = {https://github.com/ieee8023/blindtool},
 year = {2015}
 }
 ```
+
+<meta name="citation_title" content="BlindTool - A mobile app that gives a 'sense of vision' to the blind with deep learning" />
+<meta name="citation_publication_date" content="2015" />
+<meta name="citation_author" content="Joseph Paul Cohen" />
